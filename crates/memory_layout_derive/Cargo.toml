@@ -1,0 +1,13 @@
+[package]
+name = "memory_layout_derive"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+proc-macro = true
+
+[dependencies]
+quote = "1"
+syn = { version = "1", features = ["parsing"] }
+proc-macro2 = "1"
+proc-macro-crate = { version = "1", optional = true }
