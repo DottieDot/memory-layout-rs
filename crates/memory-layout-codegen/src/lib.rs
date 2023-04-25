@@ -107,7 +107,7 @@ impl Parse for StructInfo {
 ///
 /// # Example
 /// ```rust
-/// use ::memory_layout_proc::memory_layout;
+/// use ::memory_layout_codegen::memory_layout;
 ///
 /// #[memory_layout]
 /// pub struct Example {
