@@ -1,19 +1,18 @@
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, quote_spanned};
 use syn::{
-  parse::Parse, parse_macro_input, Attribute, Data, DataStruct,
-  DeriveInput, Error as SynError, Field, LitInt, Result as SynResult, Type
+  parse::Parse, parse_macro_input, spanned::Spanned, Attribute, Data, DataStruct, DeriveInput,
+  Error as SynError, Field, LitInt, Result as SynResult, Type
 };
 
 struct FieldInfo {
-  field:          Field,
-  previous_type: Option<Type>,
-  relative_offset: usize,
+  field:           Field,
+  previous_type:   Option<Type>,
+  relative_offset: usize
 }
 
 struct StructInfo {
   derived: DeriveInput,
-  data:    DataStruct,
   fields:  Vec<FieldInfo>
 }
 
@@ -69,8 +68,8 @@ impl StructInfo {
       }
 
       result.push(FieldInfo {
-        field:          field.clone(),
-        previous_type: previous_type.clone(),
+        field:           field.clone(),
+        previous_type:   previous_type.clone(),
         relative_offset: offset - current_offset
       });
 
@@ -86,19 +85,18 @@ impl Parse for StructInfo {
   fn parse(input: syn::parse::ParseStream) -> SynResult<Self> {
     let input: DeriveInput = input.parse()?;
 
-    let data = Self::get_data_struct(&input)?.clone();
+    let data = Self::get_data_struct(&input)?;
     let fields = Self::get_fields(&data)?;
 
     Ok(StructInfo {
       derived: input,
-      data,
       fields
     })
   }
 }
 
-#[proc_macro_derive(MemoryLayout, attributes(field_offset))]
-pub fn memory_layout(input: TokenStream) -> TokenStream {
+#[proc_macro_attribute]
+pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
   let struct_info = parse_macro_input!(input as StructInfo);
 
   let fields = struct_info
@@ -118,7 +116,7 @@ pub fn memory_layout(input: TokenStream) -> TokenStream {
             #pad_ident: [u8; #relative_offset - ::std::mem::size_of::<#ty>()],
             #vis #ident: #typename
           }
-        },
+        }
         None => {
           quote! {
             #pad_ident: [u8; #relative_offset],
@@ -129,9 +127,10 @@ pub fn memory_layout(input: TokenStream) -> TokenStream {
     })
     .collect::<Vec<_>>();
 
+  let name = struct_info.derived.ident;
   quote! {
     #[repr(C, packed)]
-    pub struct Test {
+    pub struct #name {
       #(#fields),*
     }
   }

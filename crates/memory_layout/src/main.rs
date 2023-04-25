@@ -1,21 +1,17 @@
-
 pub use memory_layout_derive::*;
 
-pub trait MemoryLayout {}
-
-#[derive(MemoryLayout)]
+#[memory_layout]
 pub struct Yeet {
-  #[field_offset(0x00)]
+  #[field_offset(0x10)]
   pub a: i32,
 
-  #[field_offset(0x08)]
+  #[field_offset(0x20)]
   pub b: i32,
 
-  #[field_offset(0x10)]
+  #[field_offset(0x30)]
   pub c: i32
 }
 
 fn main() {
   println!("{}", std::mem::size_of::<Yeet>());
-  println!("{}", std::mem::size_of::<Test>());
 }
