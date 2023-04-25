@@ -159,7 +159,7 @@ pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
       let vis = &f.field.vis;
       let relative_offset = f.relative_offset;
       let previous_type = &f.previous_type;
-      let pad_ident = syn::Ident::new(&format!("__pad{i}"), ident.span());
+      let pad_ident = syn::Ident::new(&format!("__pad{}", i), ident.span());
       let attrs = f
         .field
         .attrs
