@@ -110,15 +110,16 @@ impl Parse for StructInfo {
 /// pub struct Example {
 ///   #[field_offset(0x00)]
 ///   a: i32,
-///
 ///   #[field_offset(0x10)]
-///   b: i32
+///   b: u64,
+///   #[field_offset(0x18)]
+///   c: f32
 /// }
+
 /// ```
 ///
 /// Will expand to:
 /// ```rust
-///
 /// #[repr(C, packed)]
 /// pub struct Example {
 ///   #[doc(hidden)]
@@ -126,7 +127,10 @@ impl Parse for StructInfo {
 ///   a:      i32,
 ///   #[doc(hidden)]
 ///   __pad1: [u8; 16usize - ::core::mem::size_of::<i32>()],
-///   b:      i32
+///   b:      u64,
+///   #[doc(hidden)]
+///   __pad2: [u8; 8usize - ::core::mem::size_of::<u64>()],
+///   c:      f32
 /// }
 /// ```
 #[proc_macro_attribute]

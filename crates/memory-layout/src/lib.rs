@@ -9,15 +9,6 @@ mod tests {
   #[test]
   fn test_size() {
     #[memory_layout]
-    pub struct Example {
-      #[field_offset(0x00)]
-      a: i32,
-
-      #[field_offset(0x10)]
-      b: i32
-    }
-
-    #[memory_layout]
     pub struct Foo {
       #[field_offset(0x10)]
       pub a: i32,
