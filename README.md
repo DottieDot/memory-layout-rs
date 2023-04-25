@@ -1,5 +1,9 @@
 # memory-layout
 
+[![crates.io](https://img.shields.io/crates/v/memory-layout.svg)](https://crates.io/memory-layout)
+[![docs.rs](https://docs.rs/memory-layout/badge.svg)](https://docs.rs/memory-layout)
+[![CI](https://github.com/DottieDot/memory-layout-rs/actions/workflows/CI.yml/badge.svg)](https://github.com/DottieDot/memory-layout-rs/actions/workflows/CI.yml)
+
 `memory-layout` is a minimal `no_std` compatible crate that allows you to specify the memory layout of a struct, similarly to C#'s [`[StructLayout(LayoutKind.Explicit)]`](https://learn.microsoft.com/en-us/dotnet/api/system.runtime.interopservices.layoutkind).
 
 ## Docs

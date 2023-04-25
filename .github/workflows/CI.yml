@@ -5,7 +5,7 @@ on:
     branches:
       - "*"
 
-name: Continuous integration
+name: CI
 
 jobs:
   ci:

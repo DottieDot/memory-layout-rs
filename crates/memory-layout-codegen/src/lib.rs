@@ -54,10 +54,7 @@ impl StructInfo {
         .find(|attr| attr.path().is_ident("field_offset"));
 
       let offset = field_offset
-        .ok_or(SynError::new_spanned(
-          field,
-          "Field is missing a field_offset."
-        ))
+        .ok_or_else(|| SynError::new_spanned(field, "Field is missing a field_offset."))
         .and_then(Self::get_field_offset_value)?;
 
       if current_offset > offset {
