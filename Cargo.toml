@@ -1,5 +1,2 @@
 [workspace]
-members = [
-  "crates/memory_layout",
-  "crates/memory_layout_derive"
-]
+members = ["crates/memory_layout", "crates/memory_layout_proc"]

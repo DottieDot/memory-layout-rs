@@ -3,7 +3,5 @@ name = "memory_layout"
 version = "0.1.0"
 edition = "2021"
 
-# [lib]
-
 [dependencies]
-memory_layout_derive = { path = "../memory_layout_derive" }
+memory_layout_proc = { path = "../memory_layout_proc" }
