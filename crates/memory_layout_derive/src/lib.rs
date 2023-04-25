@@ -1,8 +1,8 @@
 use proc_macro::TokenStream;
-use quote::{quote, quote_spanned};
+use quote::quote;
 use syn::{
-  parse::Parse, parse_macro_input, spanned::Spanned, Attribute, Data, DataStruct, DeriveInput,
-  Error as SynError, Field, LitInt, Result as SynResult, Type
+  parse::Parse, parse_macro_input, Attribute, Data, DataStruct, DeriveInput, Error as SynError,
+  Field, LitInt, Result as SynResult, Type
 };
 
 struct FieldInfo {
@@ -51,7 +51,7 @@ impl StructInfo {
       let field_offset = field
         .attrs
         .iter()
-        .find(|attr| attr.path.is_ident("field_offset"));
+        .find(|attr| attr.path().is_ident("field_offset"));
 
       let offset = field_offset
         .ok_or(SynError::new_spanned(
