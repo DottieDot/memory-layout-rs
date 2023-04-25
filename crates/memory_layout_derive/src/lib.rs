@@ -17,7 +17,7 @@ struct StructInfo {
 }
 
 impl StructInfo {
-  fn get_data_struct<'a>(input: &'a DeriveInput) -> SynResult<&'a DataStruct> {
+  fn get_data_struct(input: &DeriveInput) -> SynResult<&DataStruct> {
     match &input.data {
       Data::Struct(data) => Ok(data),
       Data::Enum(data) => {
@@ -58,7 +58,7 @@ impl StructInfo {
           field,
           "field is missing a field_offset"
         ))
-        .and_then(|attr| Self::get_field_offset_value(attr))?;
+        .and_then(Self::get_field_offset_value)?;
 
       if current_offset > offset {
         return Err(SynError::new_spanned(
@@ -86,7 +86,7 @@ impl Parse for StructInfo {
     let input: DeriveInput = input.parse()?;
 
     let data = Self::get_data_struct(&input)?;
-    let fields = Self::get_fields(&data)?;
+    let fields = Self::get_fields(data)?;
 
     Ok(StructInfo {
       derived: input,
