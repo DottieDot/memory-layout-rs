@@ -1,7 +1,8 @@
 [package]
-name = "memory_layout_proc"
+name = "memory-layout-codegen"
 version = "0.1.0"
 edition = "2021"
+readme = "README.md"
 
 [lib]
 proc-macro = true

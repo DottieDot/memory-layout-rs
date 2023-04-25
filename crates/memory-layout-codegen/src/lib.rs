@@ -60,10 +60,10 @@ impl StructInfo {
         ))
         .and_then(Self::get_field_offset_value)?;
 
-      if current_offset >= offset {
+      if current_offset > offset {
         return Err(SynError::new_spanned(
           field_offset,
-          "Field offset can't be lower or equal to its predecessor."
+          "Field offset can't be lower than its predecessor."
         ));
       }
 
@@ -95,6 +95,43 @@ impl Parse for StructInfo {
   }
 }
 
+/// Allows for `field_offset`s to be defined in the struct.
+/// All fields in the struct have to be annotated with a `field_offset` attribute, and must be defined in-order.
+/// A `field_offset` attribute has to include a int literal, which indicates the offset the field should have.
+///
+/// The macro will also add `repr(C, packed)` to the struct it's applied to.
+///
+/// <p style="background:rgba(255,181,77,0.16);padding:0.75em;">
+/// <strong>Warning:</strong> The attribute has to be defined before any derive attributes.
+/// </p>
+///
+/// # Example
+/// ```rust
+/// use ::memory_layout_proc::memory_layout;
+///
+/// #[memory_layout]
+/// pub struct Example {
+///   #[field_offset(0x00)]
+///   a: i32,
+///
+///   #[field_offset(0x10)]
+///   b: i32
+/// }
+/// ```
+///
+/// Will expand to:
+/// ```rust
+///
+/// #[repr(C, packed)]
+/// pub struct Example {
+///   #[doc(hidden)]
+///   __pad0: [u8; 0usize],
+///   a:      i32,
+///   #[doc(hidden)]
+///   __pad1: [u8; 16usize - ::core::mem::size_of::<i32>()],
+///   b:      i32
+/// }
+/// ```
 #[proc_macro_attribute]
 pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
   let struct_info = parse_macro_input!(input as StructInfo);
@@ -132,7 +169,7 @@ pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
         Some(ty) => {
           quote! {
             #[doc(hidden)]
-            #pad_ident: [u8; #relative_offset - ::std::mem::size_of::<#ty>()],
+            #pad_ident: [u8; #relative_offset - ::core::mem::size_of::<#ty>()],
             #(#attrs)*
             #vis #ident: #typename
           }

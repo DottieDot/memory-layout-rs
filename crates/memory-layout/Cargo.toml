@@ -1,0 +1,23 @@
+[package]
+name = "memory-layout"
+version = "0.1.0"
+edition = "2021"
+authors = ["Taran van Groenigen <tvangroenigen@outlook.com>"]
+license = "MIT"
+description = "explicit struct layouts."
+keywords = ["explicit", "struct", "layout", "no_std"]
+documentation = "https://docs.rs/memory-layout"
+readme = "../../README.md"
+categories = [
+  "data-structures",
+  "embedded",
+  "no-std",
+  "data-structures",
+  "memory-management",
+  "parsing-tools",
+]
+repository = "https://github.com/DottieDot/memory-layout-rs"
+rust-version = "1.57.0"
+
+[dependencies]
+memory-layout-codegen = { version = "0.1", path = "../memory-layout-codegen" }
