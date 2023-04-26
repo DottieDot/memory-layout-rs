@@ -3,6 +3,8 @@ name = "memory-layout-codegen"
 version = "0.1.0"
 edition = "2021"
 readme = "README.md"
+description = "support crate for memory-layout"
+license = "MIT"
 
 [lib]
 proc-macro = true
