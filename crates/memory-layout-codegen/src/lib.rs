@@ -155,7 +155,7 @@ fn generate_field_offset_checks(_: &StructInfo) -> Vec<proc_macro2::TokenStream>
 ///   b:      u64,
 ///   #[doc(hidden)]
 ///   __pad2: [u8; 8usize - ::core::mem::size_of::<u64>()],
-///   c:      f32
+///   c:      f32,
 ///   __pad3: [u8; 8usize - ::core::mem::size_of::<u64>()],
 /// }
 /// ```
