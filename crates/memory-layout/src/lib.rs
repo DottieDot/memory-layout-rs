@@ -20,6 +20,6 @@ mod tests {
       pub c: i32
     }
 
-    assert_eq!(size_of::<Foo>(), 0x38, "`Foo` should be 0x38 bytes long")
+    assert_eq!(size_of::<Foo>(), 0x38, "`Foo` should be 0x38 bytes in size")
   }
 }

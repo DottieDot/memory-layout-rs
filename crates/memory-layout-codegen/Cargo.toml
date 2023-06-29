@@ -14,3 +14,6 @@ quote = "1"
 syn = { version = "2", features = ["parsing"] }
 proc-macro2 = "1"
 proc-macro-crate = { version = "1" }
+
+[features]
+offset_of = []

@@ -30,7 +30,6 @@ pub struct Example {
 ```
 Will expand to:
 ```rust
-#[repr(C, packed)]
 pub struct Example {
   #[doc(hidden)]
   __pad0: [u8; 0usize],
@@ -47,8 +46,6 @@ pub struct Example {
 ## Caveats
 * Fields have to be defined in ascending order by the specified offset.
 * `#[memory_layout]` attribute has to be defined before any `derive` attributes.
-* `repr(C, packed)` is forced.
-* Does not ensure valid field alignment ([more info](https://github.com/rust-lang/rust/issues/27060)).
 
 ## Comparable projects
 ### [struct_layout](https://crates.io/crates/struct_layout)

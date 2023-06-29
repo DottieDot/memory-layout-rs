@@ -2,8 +2,8 @@ use proc_macro::TokenStream;
 use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use syn::{
-  parse::Parse, parse_macro_input, spanned::Spanned, Attribute, Data, DataStruct, DeriveInput,
-  Error as SynError, Field, LitInt, Result as SynResult, Type
+  parse::Parse, parse_macro_input, Attribute, Data, DataStruct, DeriveInput, Error as SynError,
+  Field, LitInt, Result as SynResult, Type
 };
 
 struct FieldInfo {
@@ -95,6 +95,29 @@ impl Parse for StructInfo {
   }
 }
 
+#[cfg(feature = "offset_of")]
+fn generate_field_offset_checks(struct_info: &StructInfo) -> Vec<proc_macro2::TokenStream> {
+  let struct_ident = &struct_info.derived.ident;
+  struct_info
+    .fields
+    .iter()
+    .map(|field| {
+      let Some(ident) = field.field.ident.clone() else {
+      todo!()
+    };
+      let offset = field.absolute_offset;
+      quote! {
+        const _:() = assert!(::core::mem::offset_of!(#struct_ident, #ident) == #offset);
+      }
+    })
+    .collect::<Vec<_>>()
+}
+
+#[cfg(not(feature = "offset_of"))]
+fn generate_field_offset_checks(_: &StructInfo) -> Vec<proc_macro2::TokenStream> {
+  vec![]
+}
+
 /// Allows for `field_offset`s to be defined in the struct.
 /// All fields in the struct have to be annotated with a `field_offset` attribute, and must be defined in-order.
 /// A `field_offset` attribute has to include a int literal, which indicates the offset the field should have.
@@ -123,7 +146,6 @@ impl Parse for StructInfo {
 ///
 /// Will expand to:
 /// ```rust
-/// #[repr(C, packed)]
 /// pub struct Example {
 ///   #[doc(hidden)]
 ///   __pad0: [u8; 0usize],
@@ -147,7 +169,7 @@ pub fn memory_layout(attr: TokenStream, input: TokenStream) -> TokenStream {
     let Ok(r) = lit.base10_parse::<usize>() else {
       return quote_spanned!(
         lit.span() =>
-        compile_error!("Adding `repr` manually is not supported.");
+        compile_error!("Desired size must be a valid usize");
       )
       .into();
     };
@@ -155,19 +177,6 @@ pub fn memory_layout(attr: TokenStream, input: TokenStream) -> TokenStream {
   } else {
     None
   };
-
-  if let Some(attr) = struct_info
-    .derived
-    .attrs
-    .iter()
-    .find(|attr| attr.path().is_ident("repr"))
-  {
-    return quote_spanned!(
-      attr.span() =>
-      compile_error!("Adding `repr` manually is not supported.");
-    )
-    .into();
-  }
 
   let mut fields = struct_info
     .fields
@@ -233,17 +242,28 @@ pub fn memory_layout(attr: TokenStream, input: TokenStream) -> TokenStream {
     }
   }
 
+  let struct_ident = &struct_info.derived.ident;
+  let struct_size_check = desired_size.map(|size| {
+    quote! {
+      const _:() = assert!(::core::mem::size_of::<#struct_ident>() == #size);
+    }
+  });
+
+  let field_offset_checks = generate_field_offset_checks(&struct_info);
+
   let name = struct_info.derived.ident;
   let vis = struct_info.derived.vis;
   let attrs = struct_info.derived.attrs;
   let generics = struct_info.derived.generics;
 
   quote! {
-    #[repr(C, packed)]
     #(#attrs)*
     #vis struct #name #generics {
       #(#fields),*
     }
+
+    #(#field_offset_checks)*
+    #struct_size_check
   }
   .into()
 }
