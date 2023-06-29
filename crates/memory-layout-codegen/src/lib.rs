@@ -1,4 +1,5 @@
 use proc_macro::TokenStream;
+use proc_macro2::Span;
 use quote::{quote, quote_spanned};
 use syn::{
   parse::Parse, parse_macro_input, spanned::Spanned, Attribute, Data, DataStruct, DeriveInput,
@@ -8,7 +9,8 @@ use syn::{
 struct FieldInfo {
   field:           Field,
   previous_type:   Option<Type>,
-  relative_offset: usize
+  relative_offset: usize,
+  absolute_offset: usize
 }
 
 struct StructInfo {
@@ -67,7 +69,8 @@ impl StructInfo {
       result.push(FieldInfo {
         field:           field.clone(),
         previous_type:   previous_type.clone(),
-        relative_offset: offset - current_offset
+        relative_offset: offset - current_offset,
+        absolute_offset: offset
       });
 
       previous_type = Some(field.ty.clone());
@@ -106,7 +109,7 @@ impl Parse for StructInfo {
 /// ```rust
 /// use ::memory_layout_codegen::memory_layout;
 ///
-/// #[memory_layout]
+/// #[memory_layout(0x38)]
 /// pub struct Example {
 ///   #[field_offset(0x00)]
 ///   a: i32,
@@ -131,11 +134,27 @@ impl Parse for StructInfo {
 ///   #[doc(hidden)]
 ///   __pad2: [u8; 8usize - ::core::mem::size_of::<u64>()],
 ///   c:      f32
+///   __pad3: [u8; 8usize - ::core::mem::size_of::<u64>()],
 /// }
 /// ```
 #[proc_macro_attribute]
-pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn memory_layout(attr: TokenStream, input: TokenStream) -> TokenStream {
   let struct_info = parse_macro_input!(input as StructInfo);
+
+  let attr_value = parse_macro_input!(attr as Option<LitInt>);
+
+  let desired_size = if let Some(lit) = attr_value {
+    let Ok(r) = lit.base10_parse::<usize>() else {
+      return quote_spanned!(
+        lit.span() =>
+        compile_error!("Adding `repr` manually is not supported.");
+      )
+      .into();
+    };
+    Some(r)
+  } else {
+    None
+  };
 
   if let Some(attr) = struct_info
     .derived
@@ -150,7 +169,7 @@ pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
     .into();
   }
 
-  let fields = struct_info
+  let mut fields = struct_info
     .fields
     .iter()
     .enumerate()
@@ -186,6 +205,33 @@ pub fn memory_layout(_attr: TokenStream, input: TokenStream) -> TokenStream {
       }
     })
     .collect::<Vec<_>>();
+
+  if let Some(size) = desired_size {
+    let pad_ident = syn::Ident::new(
+      &format!("__pad{}", struct_info.fields.len()),
+      Span::call_site()
+    );
+    if let Some(last_field) = struct_info.fields.last() {
+      let last_offset = last_field.absolute_offset;
+      let prev_type = last_field.field.ty.clone();
+      let Some(required_padding) = size.checked_sub(last_offset) else {
+        return quote!(
+          compile_error!("Desired struct size is lower than the highest field offset.");
+        )
+        .into();
+      };
+
+      fields.push(quote! {
+        #[doc(hidden)]
+        #pad_ident: [u8; #required_padding - ::core::mem::size_of::<#prev_type>()],
+      })
+    } else {
+      fields.push(quote! {
+        #[doc(hidden)]
+        #pad_ident: [u8; #size],
+      })
+    }
+  }
 
   let name = struct_info.derived.ident;
   let vis = struct_info.derived.vis;

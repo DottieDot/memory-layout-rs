@@ -1,6 +1,6 @@
 [package]
 name = "memory-layout"
-version = "0.1.0"
+version = "0.2.0"
 edition = "2021"
 authors = ["Taran van Groenigen <tvangroenigen@outlook.com>"]
 license = "MIT"
@@ -19,4 +19,4 @@ repository = "https://github.com/DottieDot/memory-layout-rs"
 rust-version = "1.57.0"
 
 [dependencies]
-memory-layout-codegen = { version = "0.1", path = "../memory-layout-codegen" }
+memory-layout-codegen = { version = "0.2", path = "../memory-layout-codegen" }

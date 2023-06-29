@@ -8,7 +8,7 @@ mod tests {
 
   #[test]
   fn test_size() {
-    #[memory_layout]
+    #[memory_layout(0x38)]
     pub struct Foo {
       #[field_offset(0x10)]
       pub a: i32,
@@ -20,6 +20,6 @@ mod tests {
       pub c: i32
     }
 
-    assert_eq!(size_of::<Foo>(), 0x34, "`Foo` should be 0x34 bytes long")
+    assert_eq!(size_of::<Foo>(), 0x38, "`Foo` should be 0x38 bytes long")
   }
 }
